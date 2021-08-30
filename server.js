@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
+const encrypt = require("mongoose-encryption");
 require("dotenv").config();
 
 mongoose.connect("mongodb+srv://" + process.env.usernameMongoDB + ":" + process.env.password + "@cluster0.xgjts.mongodb.net/secretsDB", {useNewUrlParser: true, useUnifiedTopology: true})
@@ -9,11 +10,15 @@ mongoose.connect("mongodb+srv://" + process.env.usernameMongoDB + ":" + process.
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
-}
+});
 
+userSchema.plugin(encrypt, {
+    secret: process.env.secret,
+    encryptedFields: ["password"]
+});
 const User = new mongoose.model("User", userSchema);
 
 app.use(express.static("public"));
@@ -42,7 +47,7 @@ app.route("/login")
                 if (foundUser.password === password) {
                     res.render("secrets");
                 } else {
-                    res.send("Bad email or password. Try again");
+                    res.send("Wrong password. Try again");
                 }
             } else {
                 res.send("No user found.");
