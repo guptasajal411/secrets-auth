@@ -24,14 +24,39 @@ app.get("/", function(req, res) {
     res.render("home");
 });
 
-app.get("/login", function(req, res) {
+app.route("/login")
+
+.get(function(req, res) {
     res.render("login");
+})
+
+.post(function(req, res) {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    User.findOne({ email: email}, function(err, foundUser) {
+        if (err) {
+            console.log(err);
+        } else {
+            if (foundUser) {
+                if (foundUser.password === password) {
+                    res.render("secrets");
+                } else {
+                    res.send("Bad email or password. Try again");
+                }
+            } else {
+                res.send("No user found.");
+            }
+        }
+    });
 });
 
 app.route("/register")
+
 .get(function(req, res) {
     res.render("register");
 })
+
 .post(function(req, res) {
     const newUser = new User({
         email: req.body.email,
