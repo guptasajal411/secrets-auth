@@ -4,17 +4,17 @@ const ejs = require('ejs');
 const mongoose = require('mongoose');
 require("dotenv").config();
 
-mongoose.connect("mongodb+srv://" + process.env.usernameMongoDB + ":" + process.env.password + "@cluster0.xgjts.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect("mongodb+srv://" + process.env.usernameMongoDB + ":" + process.env.password + "@cluster0.xgjts.mongodb.net/secretsDB", {useNewUrlParser: true, useUnifiedTopology: true})
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const userSchema = {
     email: String,
-    passowrd: String
+    password: String
 }
 
-const User = new mongoose.Model("User", userSchema);
+const User = new mongoose.model("User", userSchema);
 
 app.use(express.static("public"));
 app.set('view engine', 'ejs');
@@ -33,8 +33,19 @@ app.route("/register")
     res.render("register");
 })
 .post(function(req, res) {
-    const newUser
-})
+    const newUser = new User({
+        email: req.body.email,
+        password: req.body.password
+    });
+    newUser.save(function(err){
+        if (err) {
+            console.log(err);
+            res.send(err);
+        } else {
+            res.render('secrets');
+        }
+    });
+}); 
 
 app.listen(PORT, function() {
     console.log('listening on port: ' + PORT);
