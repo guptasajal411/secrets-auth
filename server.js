@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const encrypt = require("mongoose-encryption");
+const md5 = require('md5');
 require("dotenv").config();
 
 mongoose.connect("mongodb+srv://" + process.env.usernameMongoDB + ":" + process.env.password + "@cluster0.xgjts.mongodb.net/secretsDB", {useNewUrlParser: true, useUnifiedTopology: true})
@@ -15,10 +16,12 @@ const userSchema = new mongoose.Schema({
     password: String
 });
 
-userSchema.plugin(encrypt, {
-    secret: process.env.secret,
-    encryptedFields: ["password"]
-});
+//  This is level 2 authentication configuration with mongoose-encryption
+// userSchema.plugin(encrypt, {
+//     secret: process.env.secret,
+//     encryptedFields: ["password"]
+// });
+
 const User = new mongoose.model("User", userSchema);
 
 app.use(express.static("public"));
@@ -37,7 +40,7 @@ app.route("/login")
 
 .post(function(req, res) {
     const email = req.body.email;
-    const password = req.body.password;
+    const password = md5(req.body.password);
 
     User.findOne({ email: email}, function(err, foundUser) {
         if (err) {
@@ -65,7 +68,7 @@ app.route("/register")
 .post(function(req, res) {
     const newUser = new User({
         email: req.body.email,
-        password: req.body.password
+        password: md5(req.body.password)
     });
     newUser.save(function(err){
         if (err) {
